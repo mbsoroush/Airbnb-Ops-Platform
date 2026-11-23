@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: airbnb
+          POSTGRES_PASSWORD: airbnb
+          POSTGRES_DB: airbnb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U airbnb -d airbnb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      AIRBNB_DB_HOST: localhost
+      AIRBNB_DB_PORT: "5432"
+      AIRBNB_DB_NAME: airbnb
+      AIRBNB_DB_USER: airbnb
+      AIRBNB_DB_PASSWORD: airbnb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[db,dev]"
+      - run: ruff check .
+      - run: pytest

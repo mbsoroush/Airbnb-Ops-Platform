@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+
+# Large city snapshots are downloaded, not committed (see data/raw/munich/README.md)
+data/raw/munich/*
+!data/raw/munich/README.md
+!data/raw/munich/*.dvc
+!data/raw/munich/.gitignore

@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airbnb
+      POSTGRES_PASSWORD: ${AIRBNB_DB_PASSWORD:-airbnb}
+      POSTGRES_DB: airbnb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airbnb -d airbnb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # HW01-A style pipeline on the tiny CSVs in data/raw
+  airbnb-ops:
+    build: .
+    command: ["airbnb-ops", "run"]
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+
+  # Load a city snapshot into Postgres:  docker compose run --rm ingest
+  ingest:
+    build: .
+    profiles: ["ingest"]
+    command: ["airbnb-ops", "ingest", "/app/data/raw/munich"]
+    environment:
+      AIRBNB_DB_HOST: postgres
+      AIRBNB_DB_PORT: "5432"
+      AIRBNB_DB_NAME: airbnb
+      AIRBNB_DB_USER: airbnb
+      AIRBNB_DB_PASSWORD: ${AIRBNB_DB_PASSWORD:-airbnb}
+      AIRBNB_PII_SALT: ${AIRBNB_PII_SALT:-airbnb-ops}
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

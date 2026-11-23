@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airbnb-ops"
+version = "0.2.0"
+description = "Airbnb analytics platform: ingestion, PII handling, SQL performance, orchestration"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "typer",
+    "rich",
+]
+
+[project.optional-dependencies]
+db = [
+    "sqlalchemy>=2.0",
+    "psycopg2-binary",
+]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[project.scripts]
+airbnb-ops = "airbnb_ops.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+airbnb_ops = ["sql/*.sql"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: needs a reachable Postgres (set AIRBNB_DB_HOST)"]

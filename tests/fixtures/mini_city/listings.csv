@@ -1,0 +1,21 @@
+id,host_id,neighbourhood_cleansed,latitude,longitude,property_type,room_type,accommodates,price,minimum_nights,availability_30,availability_365,number_of_reviews,review_scores_rating,host_name
+2992450,1000,THIRD WARD,42.65789,-73.7537,Entire rental unit,Entire home/apt,4,"$1,250.00",28.0,0,169,9,3.56,Host 1000
+3820211,1001,SIXTH WARD,42.65222,-73.76724,Entire rental unit,Entire home/apt,3,,1.0,23,342,320,4.75,Host 1001
+6623339,1002,SIXTH WARD,42.65222,-73.76724,Entire rental unit,Entire home/apt,2,$242.00,1.0,2,337,344,4.74,Host 1002
+9501054,1003,SECOND WARD,42.64734,-73.75851,Private room in rental unit,Private room,2,$79.00,1.0,13,250,479,4.59,Host 1003
+10768745,1004,FOURTEENTH WARD,42.66078,-73.80553,Private room in guest suite,Private room,1,$50.00,1.0,9,142,941,4.84,Host 1004
+11253948,1005,FIFTEENTH WARD,42.67567,-73.82438,Entire place,Entire home/apt,10,$262.00,1.0,14,348,239,4.97,Host 1005
+11639446,1006,ELEVENTH WARD,42.67583,-73.78297,Private room in home,Private room,1,$55.00,15.0,29,364,231,4.81,Host 1006
+12799126,1007,SIXTH WARD,42.65154,-73.76867,Private room in rental unit,Private room,1,$63.80,5.0,0,270,30,4.7,Host 1007
+13083497,1008,FIFTEENTH WARD,42.66972,-73.82753,Entire home,Entire home/apt,6,$314.00,2.0,11,329,203,4.63,Host 1008
+14316232,1009,TENTH WARD,42.65726,-73.78219,Private room in home,Private room,1,$45.44,18.0,30,189,55,4.67,Host 1009
+14989805,1010,FIFTEENTH WARD,42.673512,-73.819679,Entire home,Entire home/apt,7,$276.48,1.0,20,351,143,4.95,Host 1010
+15580397,1011,NINTH WARD,42.65651,-73.77887,Private room in home,Private room,2,$75.00,2.0,29,137,58,4.71,Host 1011
+16531782,1000,FOURTEENTH WARD,42.66075,-73.80605,Private room in guest suite,Private room,2,$80.00,1.0,15,338,633,4.79,Host 1000
+17238066,1001,FIFTH WARD,42.67614,-73.78169,Private room in home,Private room,1,$53.00,15.0,29,364,132,4.92,Host 1001
+17514620,1002,TENTH WARD,42.6584,-73.78309,Private room in home,Private room,1,$41.54,18.0,0,309,56,4.75,Host 1002
+18341426,1003,FIFTEENTH WARD,42.67637,-73.82395,Entire home,Entire home/apt,6,$432.50,2.0,23,358,58,4.97,Host 1003
+19527043,1004,NINTH WARD,42.65312,-73.78161,Private room in home,Private room,2,$93.00,1.0,4,204,97,4.96,Host 1004
+20519885,1005,FOURTEENTH WARD,42.65846,-73.80201,Entire home,Entire home/apt,9,$390.50,4.0,2,309,140,4.94,Host 1005
+20620135,1006,FIFTEENTH WARD,42.675,-73.82382,Entire home,Entire home/apt,6,$245.00,1.0,28,363,106,4.92,Host 1006
+20633175,1007,SEVENTH WARD,42.64939,-73.76865,Entire rental unit,Entire home/apt,4,$202.50,2.0,12,342,132,4.91,Host 1007

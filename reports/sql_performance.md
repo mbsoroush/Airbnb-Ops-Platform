@@ -1,6 +1,6 @@
 # SQL performance report
 
-Generated: 2026-11-23T13:03:19+00:00
+Generated: 2026-11-24T07:54:17+00:00
 Database: PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1)
 Rows: `listing` 7,493, `calendar_day` 2,734,952, `review` 247,636; view `analytics.mv_airbnb_neighbourhood_summary` 25
 Each query ran 3 times; timings include fetching all result rows.
@@ -9,9 +9,9 @@ Each query ran 3 times; timings include fetching all result rows.
 
 | Query | Best (s) | Average (s) | Speedup vs baseline (best) |
 | --- | ---: | ---: | ---: |
-| Naive three-table join | 2.4946 | 2.5356 | 0.0x |
-| Baseline (pre-aggregated CTEs) | 0.0786 | 0.0790 | 1.0x |
-| Materialized view read | 0.0009 | 0.0009 | 87.1x |
+| Naive three-table join | 2.5578 | 2.5997 | 0.0x |
+| Baseline (pre-aggregated CTEs) | 0.0767 | 0.0773 | 1.0x |
+| Materialized view read | 0.0005 | 0.0009 | 142.5x |
 
 ## Correctness: the naive join gives wrong averages
 

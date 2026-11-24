@@ -12,3 +12,5 @@ data/raw/munich/*
 !data/raw/munich/*.dvc
 !data/raw/munich/.gitignore
 .DS_Store
+!data/raw/munich/*.dvc
+!data/raw/munich/.gitignore

@@ -1,0 +1,5 @@
+outs:
+- md5: 9ab28c85db119da09c41e0e119a15fe3
+  size: 6493249
+  hash: md5
+  path: calendar.csv.gz

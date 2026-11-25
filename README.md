@@ -1,5 +1,7 @@
 # Airbnb Ops Platform
 
+[![ci](https://github.com/mbsoroush/Airbnb-Ops-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mbsoroush/Airbnb-Ops-Platform/actions/workflows/ci.yml)
+
 A small, production-minded data platform built around public Airbnb data: reproducible
 ingestion, PII handling, validated analytics, SQL performance tuning, a dashboard defined as
 code, and scheduled orchestration with Airflow.
@@ -19,9 +21,12 @@ code, and scheduled orchestration with Airflow.
 flowchart LR
     A[Inside Airbnb files<br/>listings, calendar, reviews] --> B[clean + PII pseudonymization]
     B --> C[(Postgres: core schema)]
-    C --> D[analytics.mv_airbnb_neighbourhood_summary]
-    D --> E[Metabase]
-    F[Airflow DAG] --> D
+    C --> D[(analytics.mv_airbnb_neighbourhood_summary)]
+    D --> E[Metabase dashboard<br/>read-only role]
+    F[Airflow DAG, daily] -->|refresh concurrently| D
+    F -->|validate| D
+    F --> G[run report<br/>success or failure]
+    H[CI: lint, tests, DAG run] -.-> B
 ```
 
 ## Quickstart
@@ -65,6 +70,8 @@ compares them. `reports/explain_notes.md` explains what the plan shows.
 A test asserts the view returns exactly the same numbers as the baseline.
 
 ## Dashboard (Metabase)
+
+![Metabase dashboard](screenshots/metabase_dashboard.png)
 
 The dashboard is defined as data in `src/airbnb_ops/metabase/dashboard.py` and provisioned
 through Metabase's REST API by `airbnb-ops metabase-setup` (run by `make bi-setup`):

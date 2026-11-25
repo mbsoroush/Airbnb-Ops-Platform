@@ -1,4 +1,4 @@
-.PHONY: install lint test test-db db-up db-down ingest view perf run
+.PHONY: install lint test test-db db-up db-down ingest view perf bi-up bi-setup bi-down af-up af-trigger af-test af-down run
 
 install:
 	python -m pip install -e ".[db,dev]"
@@ -30,6 +30,35 @@ view:
 # EXPLAIN ANALYZE + benchmark; writes reports/sql_performance.md and the plan
 perf:
 	airbnb-ops perf-report
+
+# Metabase: start it, then (once Metabase is up) create the read-only DB role and
+# provision admin, connection and dashboard. Needs AIRBNB_READER_PASSWORD and
+# METABASE_ADMIN_PASSWORD in .env (see .env.example) and the view built (make view).
+bi-up:
+	docker compose up -d metabase
+
+bi-setup:
+	airbnb-ops create-reader
+	airbnb-ops metabase-setup
+
+bi-down:
+	docker compose stop metabase
+
+# Airflow: start it (needs AIRFLOW_ADMIN_PASSWORD in .env and the view built), then trigger the DAG.
+# Open http://localhost:8080. The run report lands in reports/airflow_runs/.
+af-up:
+	docker compose up -d airflow
+
+af-trigger:
+	docker compose exec airflow airflow dags unpause airbnb_neighbourhood_summary
+	docker compose exec airflow airflow dags trigger airbnb_neighbourhood_summary
+
+# Run the DAG once in-process (no scheduler), handy for debugging.
+af-test:
+	docker compose exec airflow airflow dags test airbnb_neighbourhood_summary
+
+af-down:
+	docker compose stop airflow
 
 run:
 	airbnb-ops run

@@ -10,6 +10,7 @@ FILES = [
     "00_naive_join_antipattern.sql",
     "01_baseline_neighbourhood_summary.sql",
     "02_create_materialized_view.sql",
+    "03_validate_summary.sql",
 ]
 
 

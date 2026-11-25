@@ -36,3 +36,48 @@ jobs:
       - run: pip install -e ".[db,dev]"
       - run: ruff check .
       - run: pytest
+
+  dag:
+    # Airflow is heavy and pinned with its official constraints, so it gets its own job.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: airbnb
+          POSTGRES_PASSWORD: airbnb
+          POSTGRES_DB: airbnb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U airbnb -d airbnb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      AIRFLOW_HOME: ${{ github.workspace }}/.airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/dags
+      AIRFLOW_CONN_AIRBNB_WAREHOUSE: postgres://airbnb:airbnb@localhost:5432/airbnb
+      AIRFLOW_VAR_AIRBNB_REPORTS_DIR: ${{ github.workspace }}/.airflow/reports
+      AIRBNB_DB_HOST: localhost
+      AIRBNB_DB_PORT: "5432"
+      AIRBNB_DB_NAME: airbnb
+      AIRBNB_DB_USER: airbnb
+      AIRBNB_DB_PASSWORD: airbnb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Airflow with its constraints, then the project
+        run: |
+          pip install "apache-airflow[postgres]==3.4.0" \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-3.4.0/constraints-3.12.txt"
+          pip install -e ".[db,dev]" --constraint <(pip freeze | grep -i -E '^(apache-airflow|sqlalchemy)=')
+      - run: pytest tests/test_dag.py tests/test_pipeline.py
+      - name: Run the DAG end to end on the small fixture city
+        run: |
+          airflow db migrate
+          airbnb-ops ingest tests/fixtures/mini_city
+          airflow dags test airbnb_neighbourhood_summary

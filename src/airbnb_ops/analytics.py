@@ -10,11 +10,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .constants import VIEW
 from .db import Database
 from .sqlfiles import load_sql
-
-SCHEMA = "analytics"
-VIEW = f"{SCHEMA}.mv_airbnb_neighbourhood_summary"
 
 SUMMARY_COLUMNS = [
     "neighbourhood", "num_listings", "avg_price", "median_price", "avg_minimum_nights",

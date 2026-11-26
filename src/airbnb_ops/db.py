@@ -41,6 +41,11 @@ class Database:
             raise LookupError("query returned no rows")
         return dict(zip(columns, rows[0], strict=True))
 
+    def read_frame(self, sql: str, params: dict[str, Any] | None = None) -> pd.DataFrame:
+        """Run a read-only query with bound parameters (:name) and return a DataFrame."""
+        with self.engine.connect() as conn:
+            return pd.read_sql(text(sql), conn, params=params)
+
     def scalar(self, sql: str):
         with self.engine.connect() as conn:
             return conn.execute(text(sql)).scalar()

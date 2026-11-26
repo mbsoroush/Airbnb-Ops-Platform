@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "airbnb-ops"
-version = "0.2.0"
+version = "0.3.0"
 description = "Airbnb analytics platform: ingestion, PII handling, SQL performance, orchestration"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,9 +19,15 @@ db = [
     "sqlalchemy>=2.0",
     "psycopg2-binary",
 ]
+features = [
+    "pyarrow",
+]
 dev = [
     "pytest",
     "ruff",
+]
+dvc = [
+    "dvc",
 ]
 
 [project.scripts]

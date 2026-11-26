@@ -10,6 +10,10 @@ __pycache__/
 data/raw/munich/*
 !data/raw/munich/README.md
 
+# Generated feature datasets are DVC outputs, not committed
+data/features/*
+!data/features/.gitignore
+
 # Generated Airflow run reports
 reports/airflow_runs/
 

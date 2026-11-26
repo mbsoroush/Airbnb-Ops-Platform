@@ -1,6 +1,6 @@
-# Airbnb Ops Platform
+# Airbnb MLOps Platform
 
-[![ci](https://github.com/mbsoroush/Airbnb-Ops-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mbsoroush/Airbnb-Ops-Platform/actions/workflows/ci.yml)
+[![ci](https://github.com/mbsoroush/Airbnb-MLOps-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mbsoroush/Airbnb-MLOps-Platform/actions/workflows/ci.yml)
 
 A small, production-minded data platform built around public Airbnb data: reproducible
 ingestion, PII handling, validated analytics, SQL performance tuning, a dashboard defined as

@@ -1,7 +1,7 @@
-.PHONY: install lint test test-db db-up db-down ingest view perf bi-up bi-setup bi-down af-up af-trigger af-test af-down run
+.PHONY: install lint test test-db db-up db-down ingest view features features-v2 perf bi-up bi-setup bi-down af-up af-trigger af-test af-down run
 
 install:
-	python -m pip install -e ".[db,dev]"
+	python -m pip install -e ".[db,dev,features]"
 
 lint:
 	python -m ruff check .
@@ -26,6 +26,15 @@ ingest:
 # (Re)create the materialized view analytics.mv_airbnb_neighbourhood_summary
 view:
 	airbnb-ops build-view
+
+# Feature dataset: versioned feature datasets under data/features/ (needs make ingest first).
+# v1 uses the earliest valid cutoff, derived from the data. v2 is a comparison dataset whose
+# cutoff avoids the Christmas and New Year label window of v1.
+features:
+	airbnb-ops build-features --version v1
+
+features-v2:
+	airbnb-ops build-features --version v2 --cutoff 2027-02-22 --cutoff-reason "Avoids the Christmas and New Year label window of v1; comparison dataset, not chosen by model score."
 
 # EXPLAIN ANALYZE + benchmark; writes reports/sql_performance.md and the plan
 perf:

@@ -9,3 +9,43 @@ stages:
       - data/processed/airbnb_neighbourhood_summary.csv
       - reports/hw01_a_run_report.md:
           cache: false
+
+  build_features_v1:
+    cmd: airbnb-ops build-features --version v1
+    deps:
+      - src/airbnb_ops/features
+      - src/airbnb_ops/sql
+      - data/raw/munich/listings.csv.gz
+      - data/raw/munich/calendar.csv.gz
+      - data/raw/munich/reviews.csv.gz
+    outs:
+      - data/features/listing_availability_features_v1.csv
+      - data/features/listing_availability_features_v1.parquet
+      - data/features/listing_availability_features_v1_metadata.json:
+          cache: false
+      - data/features/listing_availability_features_v1_validation_report.json:
+          cache: false
+      - data/features/pii_audit_v1.csv:
+          cache: false
+      - reports/features_v1.md:
+          cache: false
+
+  build_features_v2:
+    cmd: airbnb-ops build-features --version v2 --cutoff 2027-02-22 --cutoff-reason "Avoids the Christmas and New Year label window of v1"
+    deps:
+      - src/airbnb_ops/features
+      - src/airbnb_ops/sql
+      - data/raw/munich/listings.csv.gz
+      - data/raw/munich/calendar.csv.gz
+      - data/raw/munich/reviews.csv.gz
+    outs:
+      - data/features/listing_availability_features_v2.csv
+      - data/features/listing_availability_features_v2.parquet
+      - data/features/listing_availability_features_v2_metadata.json:
+          cache: false
+      - data/features/listing_availability_features_v2_validation_report.json:
+          cache: false
+      - data/features/pii_audit_v2.csv:
+          cache: false
+      - reports/features_v2.md:
+          cache: false

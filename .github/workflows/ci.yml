@@ -33,9 +33,13 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e ".[db,dev]"
+      - run: pip install -e ".[db,dev,features]"
       - run: ruff check .
       - run: pytest
+      - name: Build the feature dataset on the small fixture city
+        run: |
+          airbnb-ops ingest tests/fixtures/mini_city_ml
+          airbnb-ops build-features --version ci --out-dir "$RUNNER_TEMP/features" --reports-dir "$RUNNER_TEMP/reports"
 
   dag:
     # Airflow is heavy and pinned with its official constraints, so it gets its own job.

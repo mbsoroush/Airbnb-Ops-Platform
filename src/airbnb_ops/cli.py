@@ -123,6 +123,60 @@ def perf_report_cmd(
     console.print(f"Wrote reports to {reports_dir}/")
 
 
+@app.command("build-features")
+def build_features(
+    version: str = typer.Option(
+        "v1", "--version", envvar="AIRBNB_FEATURE_VERSION", help="Dataset version (file names)."
+    ),
+    cutoff: datetime | None = typer.Option(
+        None,
+        formats=["%Y-%m-%d"],
+        help="Cutoff date. Default: the earliest valid cutoff, derived from the data.",
+    ),
+    cutoff_reason: str | None = typer.Option(
+        None, help="Why this cutoff was chosen; stored in the metadata (use with --cutoff)."
+    ),
+    threshold: float = typer.Option(0.30, help="high_demand_proxy = 1 when future rate <= this."),
+    out_dir: Path = typer.Option(Path("data/features"), help="Where the dataset files go."),
+    reports_dir: Path = typer.Option(Path("reports"), help="Where the Markdown report goes."),
+    overwrite: bool = typer.Option(
+        False, "--overwrite", help="Replace an existing version that has different content."
+    ),
+) -> None:
+    """Build a versioned, validated feature dataset from the core tables."""
+    from .features.artifacts import VersionExistsError
+    from .features.build import build_feature_dataset
+    from .features.config import FeatureConfig
+    from .features.validate import FeatureValidationError
+
+    try:
+        config = FeatureConfig(
+            dataset_version=version,
+            cutoff_date=cutoff.date() if cutoff else None,
+            cutoff_reason=cutoff_reason,
+            label_threshold=threshold,
+        )
+        result = build_feature_dataset(
+            _db_or_exit(), config, out_dir, overwrite=overwrite, reports_dir=reports_dir
+        )
+    except (ValueError, FeatureValidationError, VersionExistsError) as exc:
+        console.print(f"[red]Feature build failed:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    plan = result.plan
+    console.print(f"[green]Built dataset {version}[/green]: {len(result.frame):,} rows")
+    console.print(f"cutoff {plan.cutoff_date} ({plan.selection_rule})")
+    for step, n in result.rule_counts.items():
+        console.print(f"  {step}: {n:,}")
+    for name, path in result.paths.items():
+        if path.exists():
+            console.print(f"{name}: {path}")
+    from rich.markup import escape
+
+    for warning in result.report["warnings"]:
+        console.print(f"[yellow]{escape(warning)}[/yellow]")
+
+
 @app.command("create-reader")
 def create_reader() -> None:
     """Create or update the read-only Postgres role Metabase connects with."""

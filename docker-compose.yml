@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # HW01-A style pipeline on the tiny CSVs in data/raw
+  # Small pipeline run on the tiny CSVs in data/raw
   airbnb-ops:
     build: .
     command: ["airbnb-ops", "run"]
@@ -102,7 +102,48 @@ services:
       retries: 20
       start_period: 90s
 
+  # Experiment tracking (stage 5). `make mlflow-up`, then open http://localhost:5001.
+  # Development setup: SQLite backend, artifacts in a local volume, NO authentication.
+  # Artifacts are served through the tracking server (--serve-artifacts), so a client on your
+  # machine uploads over HTTP and never writes to a path that only exists in the container.
+  # Host port 5001 because macOS uses 5000 for AirPlay Receiver.
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+      args:
+        MLFLOW_VERSION: ${MLFLOW_VERSION:-2.20.3}
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      - --artifacts-destination
+      - /mlflow/artifacts
+      - --serve-artifacts
+      - --default-artifact-root
+      - mlflow-artifacts:/
+    ports:
+      - "${MLFLOW_HOST_PORT:-5001}:5000"
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 volumes:
   pgdata:
   airflow-home:
   metabase-data:
+  mlflow-data:

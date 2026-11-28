@@ -41,6 +41,19 @@ jobs:
           airbnb-ops ingest tests/fixtures/mini_city_ml
           airbnb-ops build-features --version ci --out-dir "$RUNNER_TEMP/features" --reports-dir "$RUNNER_TEMP/reports"
 
+  ml:
+    # scikit-learn and MLflow are heavy, so they get their own job. The tests use a file-based
+    # MLflow store and synthetic data: no server, no database.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[db,dev,features,ml]"
+      - run: pytest tests/test_ml_columns.py tests/test_ml_pipeline.py tests/test_ml_metrics_split.py tests/test_ml_run.py tests/test_ml_select.py tests/test_ml_orchestrate.py tests/test_ml_imports.py tests/test_ml_data.py tests/test_mlflow_tracker.py
+
   dag:
     # Airflow is heavy and pinned with its official constraints, so it gets its own job.
     runs-on: ubuntu-latest

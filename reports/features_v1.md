@@ -101,4 +101,4 @@ high_demand_proxy = 1 when future_available_rate_30d <= label_threshold. The rat
 | file | bytes | sha256 |
 | --- | --- | --- |
 | listing_availability_features_v1.csv | 1603753 | 3601ff3f44bb7ca544648e208873fbd97be404408186a092177e92509cc73d23 |
-| listing_availability_features_v1.parquet | 300107 | 91973b94781b4d25f61f2f1496250ab8987649335164b51b648d36aaa714f6ba |
+| listing_availability_features_v1.parquet | 298807 | 4f6ad33012b60549292d97bdfe69a43dce2be9487dc829187aa3a770a21823b5 |

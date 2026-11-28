@@ -1,7 +1,7 @@
-.PHONY: install lint test test-db db-up db-down ingest view features features-v2 perf bi-up bi-setup bi-down af-up af-trigger af-test af-down run
+.PHONY: install lint test test-db db-up db-down ingest view features features-v2 perf bi-up bi-setup bi-down af-up af-trigger af-test af-down mlflow-up mlflow-down experiments experiments-dry compare-runs run
 
 install:
-	python -m pip install -e ".[db,dev,features]"
+	python -m pip install -e ".[db,dev,features,ml]"
 
 lint:
 	python -m ruff check .
@@ -28,13 +28,13 @@ view:
 	airbnb-ops build-view
 
 # Feature dataset: versioned feature datasets under data/features/ (needs make ingest first).
-# v1 uses the earliest valid cutoff, derived from the data. v2 is a comparison dataset whose
-# cutoff avoids the Christmas and New Year label window of v1.
+# The cutoff of each version lives in src/airbnb_ops/features/versions.py: v1 uses the earliest
+# valid cutoff, v2 avoids the Christmas and New Year label window of v1.
 features:
 	airbnb-ops build-features --version v1
 
 features-v2:
-	airbnb-ops build-features --version v2 --cutoff 2027-02-22 --cutoff-reason "Avoids the Christmas and New Year label window of v1; comparison dataset, not chosen by model score."
+	airbnb-ops build-features --version v2
 
 # EXPLAIN ANALYZE + benchmark; writes reports/sql_performance.md and the plan
 perf:
@@ -68,6 +68,25 @@ af-test:
 
 af-down:
 	docker compose stop airflow
+
+# Experiment tracking (stage 5). `make mlflow-up` starts the local MLflow server on
+# http://localhost:5001 (development setup, no authentication). `make experiments` trains every
+# run on the v1 feature dataset, logs it, selects the final model and writes
+# reports/experiments_v1.md. `make experiments-dry` does the same in memory, without a server.
+mlflow-up:
+	docker compose up -d --build mlflow
+
+mlflow-down:
+	docker compose stop mlflow
+
+experiments:
+	airbnb-ops experiments --version v1 --robustness-version v2
+
+experiments-dry:
+	airbnb-ops experiments --version v1 --robustness-version v2 --dry-run
+
+compare-runs:
+	airbnb-ops compare-runs
 
 run:
 	airbnb-ops run

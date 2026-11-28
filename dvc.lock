@@ -13,18 +13,18 @@ stages:
       size: 176
     - path: src/airbnb_ops
       hash: md5
-      md5: e37af3e09da917f5ffb9aeb329071a15.dir
-      size: 90417
-      nfiles: 38
+      md5: bd7d13f598d7e068bf68c3e044a19ded.dir
+      size: 462205
+      nfiles: 116
     outs:
     - path: data/processed/airbnb_neighbourhood_summary.csv
       hash: md5
       md5: 5244c9ae1f7122062856e70849ef9970
       size: 446
-    - path: reports/hw01_a_run_report.md
+    - path: reports/pipeline_run_report.md
       hash: md5
-      md5: 42dab7952e1cc1f372d36007027b7019
-      size: 987
+      md5: c65cfbd2714ba1deb750b77e390bd6f0
+      size: 989
   build_features_v1:
     cmd: airbnb-ops build-features --version v1
     deps:
@@ -42,14 +42,14 @@ stages:
       size: 28123796
     - path: src/airbnb_ops/features
       hash: md5
-      md5: 411eafa05364226121ad73591a21dd4f.dir
-      size: 110727
-      nfiles: 22
+      md5: 92dabe36b5cf6b37a01d261b6b9fdede.dir
+      size: 117225
+      nfiles: 24
     - path: src/airbnb_ops/sql
       hash: md5
-      md5: bb7f09f591acc500590aaceae4a71c11.dir
-      size: 13027
-      nfiles: 13
+      md5: 5f6653d36ff77341cef6eb9451664bdf.dir
+      size: 13391
+      nfiles: 14
     outs:
     - path: data/features/listing_availability_features_v1.csv
       hash: md5
@@ -57,12 +57,12 @@ stages:
       size: 1603753
     - path: data/features/listing_availability_features_v1.parquet
       hash: md5
-      md5: f0f5471ca99d43c201e5e15a77338a33
-      size: 300107
+      md5: 74d356d6ce755f10ce2526f9502a7c03
+      size: 298807
     - path: data/features/listing_availability_features_v1_metadata.json
       hash: md5
-      md5: a968882c2e14a82e8cefe97c59abf4e4
-      size: 8017
+      md5: 29d2a20ddf47cbad4f25e0087fefac55
+      size: 9906
     - path: 
         data/features/listing_availability_features_v1_validation_report.json
       hash: md5
@@ -74,5 +74,56 @@ stages:
       size: 1664
     - path: reports/features_v1.md
       hash: md5
-      md5: 9664ca539557c6e9881fe7a267429d4b
+      md5: c1f689eb1e258deb975d0dcee39e091f
       size: 4603
+  build_features_v2:
+    cmd: airbnb-ops build-features --version v2
+    deps:
+    - path: data/raw/munich/calendar.csv.gz
+      hash: md5
+      md5: 9ab28c85db119da09c41e0e119a15fe3
+      size: 6493249
+    - path: data/raw/munich/listings.csv.gz
+      hash: md5
+      md5: ef8d0b36c8a5c9e958800b36773a9d59
+      size: 3753794
+    - path: data/raw/munich/reviews.csv.gz
+      hash: md5
+      md5: 1d3dadcaf6579e73d189ae0b85871e23
+      size: 28123796
+    - path: src/airbnb_ops/features
+      hash: md5
+      md5: 92dabe36b5cf6b37a01d261b6b9fdede.dir
+      size: 117225
+      nfiles: 24
+    - path: src/airbnb_ops/sql
+      hash: md5
+      md5: 5f6653d36ff77341cef6eb9451664bdf.dir
+      size: 13391
+      nfiles: 14
+    outs:
+    - path: data/features/listing_availability_features_v2.csv
+      hash: md5
+      md5: 4b1ef80005fac0256d53ab49977fc812
+      size: 1537573
+    - path: data/features/listing_availability_features_v2.parquet
+      hash: md5
+      md5: a69e4146619369542fbd87a22c89e699
+      size: 290706
+    - path: data/features/listing_availability_features_v2_metadata.json
+      hash: md5
+      md5: b958b9d6973b4574f90d48bc60f0894c
+      size: 9945
+    - path: 
+        data/features/listing_availability_features_v2_validation_report.json
+      hash: md5
+      md5: b931b8a5149e467f8480b8fbe2492e68
+      size: 4470
+    - path: data/features/pii_audit_v2.csv
+      hash: md5
+      md5: 122ff7e9847aa8854772c55234907ebc
+      size: 1664
+    - path: reports/features_v2.md
+      hash: md5
+      md5: 00e6b15c571b11e287bba52bf7b09db9
+      size: 4642

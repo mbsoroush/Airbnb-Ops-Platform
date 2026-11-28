@@ -57,6 +57,46 @@ LABEL_ONLY_COLUMNS: tuple[str, ...] = (
     "high_demand_proxy",
 )
 
+# How the model input columns are treated by the model pipeline. The pipeline implements
+# exactly this, and it is written into the dataset metadata so that training and serving read
+# the same contract.
+CATEGORICAL_COLUMNS: tuple[str, ...] = ("room_type", "property_type", "neighbourhood_name")
+BOOLEAN_COLUMNS: tuple[str, ...] = ("instant_bookable", "host_is_superhost")
+# Heavy right tails (prices up to about 80,000 per night, review counts, night limits): log1p.
+LOG1P_COLUMNS: tuple[str, ...] = (
+    "listing_price",
+    "minimum_nights",
+    "maximum_nights",
+    "host_listing_count",
+    "total_reviews_before_cutoff",
+    "unique_reviewers_before_cutoff",
+    "avg_comment_len_before_cutoff",
+    "max_comment_len_before_cutoff",
+    "avg_minimum_nights_calendar_last_90d",
+    "avg_maximum_nights_calendar_last_90d",
+    "avg_minimum_nights_calendar_last_30d",
+    "avg_maximum_nights_calendar_last_30d",
+)
+NUMERIC_COLUMNS: tuple[str, ...] = tuple(
+    c for c in MODEL_INPUT_COLUMNS if c not in CATEGORICAL_COLUMNS + BOOLEAN_COLUMNS
+)
+
+PREPROCESSING_CONTRACT: dict = {
+    "categorical_columns": list(CATEGORICAL_COLUMNS),
+    "boolean_columns": list(BOOLEAN_COLUMNS),
+    "numeric_columns": list(NUMERIC_COLUMNS),
+    "log1p_columns": list(LOG1P_COLUMNS),
+    "numeric": "median imputation with a missing-value indicator; log1p for the log1p columns; "
+    "standard scaling",
+    "boolean": "cast to 0/1; most frequent imputation",
+    "categorical": "most frequent imputation; one-hot encoding with rare categories grouped",
+    "constant_columns": (
+        "Columns that are constant in the training data (for Munich, instant_bookable is empty "
+        "in the source file and becomes constant False) are excluded from the model. They stay "
+        "part of the request contract."
+    ),
+}
+
 # The final table: audit fields, then model inputs, then label-window columns.
 TABLE_COLUMNS: tuple[str, ...] = AUDIT_COLUMNS + MODEL_INPUT_COLUMNS + LABEL_ONLY_COLUMNS
 

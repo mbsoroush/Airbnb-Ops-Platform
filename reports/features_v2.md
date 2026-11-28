@@ -1,6 +1,6 @@
 # Feature dataset v2
 
-- Cutoff: **2027-02-22** (configured): Avoids the Christmas and New Year label window of v1; comparison dataset, not chosen by model score.
+- Cutoff: **2027-02-22** (configured): Avoids the Christmas and New Year label window of v1. Comparison dataset; the cutoff was not chosen by model score.
 - History window: 2026-11-25 to 2027-02-22; label window: after 2027-02-22 up to 2027-03-24
 - Valid cutoff range in the data: 2026-12-24 to 2027-08-26
 - Rows: 7458; positive rate: 0.5644
@@ -101,4 +101,4 @@ high_demand_proxy = 1 when future_available_rate_30d <= label_threshold. The rat
 | file | bytes | sha256 |
 | --- | --- | --- |
 | listing_availability_features_v2.csv | 1537573 | 2a4de7bf1915a606b8c2acd671e4589bdcb84532c77e055deb5d8f9d17bc3ae0 |
-| listing_availability_features_v2.parquet | 291610 | 248f0568b4c35c543a1a35c30714e794027bb53220a7a8aec5261dbac7b3d607 |
+| listing_availability_features_v2.parquet | 290706 | 0a0988563f0db4dd82d2eba3e411378510441eec0e8ac909b3f1ec2ce385ab19 |

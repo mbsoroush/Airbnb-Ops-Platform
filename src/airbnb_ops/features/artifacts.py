@@ -15,6 +15,7 @@ from .config import (
     FORBIDDEN_TABLE_COLUMNS,
     LABEL_ONLY_COLUMNS,
     MODEL_INPUT_COLUMNS,
+    PREPROCESSING_CONTRACT,
     TARGET_COLUMN,
     FeatureConfig,
 )
@@ -162,6 +163,7 @@ def build_metadata(
         "model_input_columns": list(MODEL_INPUT_COLUMNS),
         "label_only_columns": list(LABEL_ONLY_COLUMNS),
         "audit_columns": list(AUDIT_COLUMNS),
+        "preprocessing_contract": PREPROCESSING_CONTRACT,
         "forbidden_model_inputs": list(FORBIDDEN_MODEL_INPUTS),
         "forbidden_table_columns": list(FORBIDDEN_TABLE_COLUMNS),
         "row_counts": rule_counts,

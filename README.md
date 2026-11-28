@@ -2,19 +2,21 @@
 
 [![ci](https://github.com/mbsoroush/Airbnb-MLOps-Platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mbsoroush/Airbnb-MLOps-Platform/actions/workflows/ci.yml)
 
-A small, production-minded data platform built around public Airbnb data: reproducible
+A small, production-minded MLOps platform built around public Airbnb data: reproducible
 ingestion, PII handling, validated analytics, SQL performance tuning, a dashboard defined as
-code, and scheduled orchestration with Airflow.
+code, scheduled orchestration with Airflow, a versioned feature dataset, and tracked model
+experiments.
 
 ## Status
 
-| Milestone | Scope | State |
+| Stage | Scope | State |
 |---|---|---|
-| 1. Package and ingestion | CLI, PII handling, cleaning, Postgres loader, tests, CI, Docker | done |
-| 2. SQL performance | baseline query, `EXPLAIN ANALYZE`, materialized view, indexes, benchmark | done |
-| 2b. Dashboard | Metabase on the materialized view, provisioned from code | done |
+| 1. Ingestion | CLI, PII handling, cleaning, Postgres loader, tests, CI, Docker | done |
+| 2. Analytics and BI | baseline query, `EXPLAIN ANALYZE`, materialized view, indexes, benchmark; Metabase dashboard provisioned from code | done |
 | 3. Orchestration | Airflow DAG: refresh, validate, branch, report | done |
 | 4. Feature dataset | extended ingest, versioned feature datasets v1/v2, validation, PII audit | done |
+| 5. Experiment tracking | MLflow runs, leakage and baseline controls, final-model selection, grouped comparisons | built, verify with `make experiments` |
+| 6. Model serving | FastAPI service with validated input | planned |
 
 ## Architecture
 
@@ -28,13 +30,15 @@ flowchart LR
     F -->|validate| D
     F --> G[run report<br/>success or failure]
     C --> I[data/features<br/>versioned feature dataset, DVC<br/>validation + PII audit]
+    I --> J[MLflow runs<br/>leaky, dummy, logistic, forest<br/>grouped comparisons]
+    J --> K[selected clean model<br/>tagged selected_for_serving]
     H[CI: lint, tests, DAG run] -.-> B
 ```
 
 ## Quickstart
 
 ```bash
-make install            # editable install with db + dev extras
+make install            # editable install with db, dev, features and ml extras
 make test               # unit tests (database tests are skipped)
 
 make db-up              # Postgres 16 via docker compose
@@ -43,6 +47,10 @@ make ingest
 
 make features           # data/features/listing_availability_features_v1.* plus metadata, validation, PII audit
 make features-v2        # comparison dataset with a later cutoff
+
+make mlflow-up          # local MLflow server on http://localhost:5001 (dev setup, no auth)
+make experiments        # train and log every run on v1, select the final model, write the report
+make compare-runs       # the run comparison table from mlflow.search_runs
 
 make test-db            # full tests incl. database ones (separate airbnb_test database)
 make perf               # EXPLAIN ANALYZE + benchmark -> reports/sql_performance.md
@@ -56,7 +64,7 @@ make bi-setup           # read-only DB role + Metabase admin, connection and das
 Tiny demo pipeline on the bundled CSVs (no database needed):
 
 ```bash
-airbnb-ops run          # writes data/processed/... and reports/hw01_a_run_report.md
+airbnb-ops run          # writes data/processed/... and reports/pipeline_run_report.md
 ```
 
 ## SQL performance
@@ -223,6 +231,86 @@ pandas implementation (`tests/features_reference.py`). With Postgres (`make test
 SQL is compared against that reference on the `mini_city_ml` fixture, which has a 140 day
 calendar and one listing for every rule above (see `tests/fixtures/make_mini_city_ml.py`).
 
+## Experiment tracking (stage 5)
+
+`airbnb-ops experiments` trains every run on the feature dataset, logs it to MLflow, picks the
+final clean model and writes `reports/experiments_v1.md` (comparison table, selected run,
+written explanation). `airbnb-ops compare-runs` prints the table straight from
+`mlflow.search_runs`.
+
+```
+data/features (verified by sha256) --> split --> run helper --> MLflow --> selection --> report
+```
+
+**The runs** (one shared run helper, the same five metrics everywhere: accuracy, precision,
+recall, f1, roc_auc with `zero_division=0`):
+
+| Run | Purpose |
+|---|---|
+| `v0_leaky_logistic_regression` | given `future_available_rate_30d` on purpose; looks suspiciously perfect and is rejected |
+| `v1_dummy_baseline` | `DummyClassifier(most_frequent)`: what a useless model scores |
+| `v2` / `v3` logistic regression | plain and `class_weight=balanced` |
+| `v4_threshold_0.30 / 0.40 / 0.60` | the balanced model at other decision thresholds (0.50 is v3) |
+| `v5` / `v5b` random forest | moderately deep and regularised forests |
+| `v6_host_grouped_*`, `v6_neighbourhood_grouped_*`, `v6_cross_version_v2_*` | extra comparisons for the selected configuration (not candidates) |
+
+**One Pipeline, one transformation.** The logged model is a single sklearn Pipeline:
+normalize types, then a ColumnTransformer, then the model. Numeric columns get median
+imputation with a missing-value indicator and scaling; heavy-tailed columns (price, review
+counts, night limits) get `log1p` first, which is what keeps a price of about 80,000 per night
+and a third of prices missing from distorting the model. Booleans are cast to 0/1, categoricals
+are one-hot encoded with rare categories grouped. The treatment is part of the dataset's
+feature contract (`preprocessing_contract` in the metadata), so serving applies the identical
+transformation.
+
+**Split and selection.** A stratified 80/20 split (`random_state=42`). Runs are compared by
+5-fold cross-validated metrics on the training part (`cv_*`); the test part is scored once per
+run (the bare metrics, the conventional comparison) and is never used to choose. The
+rule: among clean standard runs that beat the dummy by 0.05 cross-validated ROC AUC, take
+the highest cross-validated ROC AUC (within 0.001 counts as a tie; ties, such as the same model
+at different thresholds, go to the higher cross-validated F1). ROC AUC comes first because the
+positive class is the majority: a dummy that always predicts it already scores an F1 of about
+0.73, so F1 alone cannot show skill. The winner is tagged
+`selected_for_serving=true` and `production_candidate=true`; a later run moves the tag.
+
+**`instant_bookable`.** The Munich file has no values for it, so after the fill rule it is
+constant False. A constant column carries no information, so the model excludes it. It stays
+in the request contract. The exclusion is data-driven: if another city's data varies, the
+column is used.
+
+**Grouped comparisons.** A random split can flatter a model that memorises hosts. The
+host-grouped run holds out whole hosts; group labels come from a separate read-only query
+(`sql/20_host_groups.sql`, `host_key` never leaves SQL), stay in memory, and are never logged,
+written to a file or committed. Only the resulting metrics are logged. Without database access
+this comparison is skipped with a message. The neighbourhood-grouped run uses the feature
+table. Evaluating on `v2` is a robustness check only: `v1` and `v2` contain the same listings.
+
+**Every run records** the dataset version, file name and sha256, cutoff, git commit (`unknown`
+outside a checkout, plus a dirty flag), scikit-learn, pandas, Python and MLflow versions and the
+random seed, as tags and params. Artifacts per run: `confusion_matrix.png`,
+`classification_report.json`, `feature_columns.json`, `dataset_metadata_snapshot.json` and the
+model.
+
+**How to read the scores.** About 57% of listings are positive, so a trivial model already gets
+a high accuracy and F1: compare ROC AUC and the dummy. The label and the strongest feature
+(`available_rate_last_30d`) come from the same forward-looking calendar snapshot, so a good
+score does not prove that the model predicts real bookings, and none of the splits here is a
+true temporal split. `days_since_last_review` is kept because the contract is fixed; the report
+shows how much it carries on its own.
+
+**MLflow server (development setup).** `make mlflow-up` builds and starts `Dockerfile.mlflow`
+(MLflow 2.20.3, the same version as the `ml` extra, with SQLAlchemy kept below 2.1 because
+MLflow 2.20.3 imports a class that SQLAlchemy 2.1 removed): SQLite backend in a volume, artifacts served
+through the server (`--serve-artifacts`), no authentication, port 5001 (macOS uses 5000 for
+AirPlay). This is for development, not production: use a real database, an artifact store and
+authentication there. To use another server (for example a remote one) set `MLFLOW_TRACKING_URI`
+and, if needed, `MLFLOW_TRACKING_USERNAME` / `MLFLOW_TRACKING_PASSWORD` in the shell or `.env`.
+`make experiments-dry` runs everything with an in-memory tracker, without a server.
+
+**Tests.** The training logic is tested with an in-memory tracker on synthetic data that has
+the real column contract (`tests/ml_synthetic.py`); only `mlflow_tracker.py` imports MLflow, and a
+separate test uses a file-based MLflow store. CI runs them in their own `ml` job.
+
 ## Design decisions
 
 - **PII never enters the warehouse.** Only needed columns are read (names and free text such
@@ -251,7 +339,7 @@ Raw city files are not committed.
 ## Layout
 
 ```
-src/airbnb_ops/   package (cli, pii, transform, validate, analytics, ingest/, features/, metabase/)
+src/airbnb_ops/   package (cli, pii, transform, validate, analytics, ingest/, features/, ml/, metabase/)
 src/airbnb_ops/sql/  core schema, baseline query, materialized view
 tests/            unit tests + fixtures (database tests need Postgres)
 reports/          generated performance reports and plan notes

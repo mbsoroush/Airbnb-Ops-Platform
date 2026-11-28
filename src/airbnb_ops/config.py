@@ -8,4 +8,4 @@ class PipelineConfig:
     listings_path: Path = field(default=Path("data/raw/listings_sample.csv"))
     segments_path: Path = field(default=Path("data/raw/neighbourhood_segments.csv"))
     output_path: Path = field(default=Path("data/processed/airbnb_neighbourhood_summary.csv"))
-    report_path: Path = field(default=Path("reports/hw01_a_run_report.md"))
+    report_path: Path = field(default=Path("reports/pipeline_run_report.md"))

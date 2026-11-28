@@ -130,6 +130,9 @@ def test_files_metadata_and_report_are_written(core, tmp_path):
     assert meta["cutoff"]["selection_rule"] == "earliest_valid"
     assert meta["source"]["snapshot_date_proxy"] == "2026-09-25"
     assert any("forward-looking" in text for text in meta["limitations"])
+    assert meta["preprocessing_contract"]["log1p_columns"][0] == "listing_price"
+    assert meta["preprocessing_contract"]["boolean_columns"] == ["instant_bookable",
+                                                               "host_is_superhost"]
     assert meta["source"]["inspection"]["connection"]["status"] == "ok"
     assert meta["source"]["calendar_price"]["used_as_features"] is False
     assert "no price or adjusted_price" in meta["source"]["calendar_price"]["note"]

@@ -1,0 +1,15 @@
+# MLflow tracking server for local development (stage 5). Pinned to the same version as the
+# client in pyproject.toml (extra "ml"), so client and server always match.
+FROM python:3.11-slim
+
+# MLflow 2.20.3 imports a class that SQLAlchemy 2.1 removed, so the server image pins
+# SQLAlchemy below 2.1 (the same pin as the "ml" extra in pyproject.toml).
+ARG MLFLOW_VERSION=2.20.3
+RUN pip install --no-cache-dir "mlflow==${MLFLOW_VERSION}" "sqlalchemy>=2.0,<2.1"
+
+RUN useradd --create-home --uid 10001 mlflow \
+    && mkdir -p /mlflow \
+    && chown mlflow /mlflow
+USER mlflow
+WORKDIR /mlflow
+EXPOSE 5000

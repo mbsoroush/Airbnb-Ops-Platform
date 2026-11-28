@@ -1,6 +1,6 @@
-# HW01-A Run Report
+# Pipeline Run Report
 
-- Run at (UTC): 2026-11-24T08:09:37+00:00
+- Run at (UTC): 2026-11-28T11:10:21+00:00
 - Input listings: 8
 - Output neighbourhoods: 5
 - Neighbourhoods with unknown segment: 0

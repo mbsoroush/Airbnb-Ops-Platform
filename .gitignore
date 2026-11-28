@@ -14,6 +14,15 @@ data/raw/munich/*
 data/features/*
 !data/features/.gitignore
 
+# Experiment tracking and model files (stage 5 and 6): local stores, exports, group labels
+mlruns/
+mlartifacts/
+models/
+outputs/
+*.joblib
+*.pkl
+host_groups*
+
 # Generated Airflow run reports
 reports/airflow_runs/
 

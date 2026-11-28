@@ -4,6 +4,16 @@ from pathlib import Path
 
 import pytest
 
+try:  # the ML tests need the optional `ml` extra
+    import sklearn  # noqa: F401
+except ImportError:
+    collect_ignore_glob = ["test_ml_*.py", "test_mlflow_tracker.py"]
+else:
+    try:
+        import mlflow  # noqa: F401
+    except ImportError:
+        collect_ignore_glob = ["test_mlflow_tracker.py"]
+
 FIXTURES = Path(__file__).parent / "fixtures" / "mini_city"
 FIXTURES_ML = Path(__file__).parent / "fixtures" / "mini_city_ml"
 TEST_DB = os.getenv("AIRBNB_TEST_DB_NAME", "airbnb_test")
@@ -65,7 +75,7 @@ def loaded_ml_db(mini_city_ml):
     """A second test database (airbnb_test_ml) holding the longer-calendar fixture.
 
     It is separate from airbnb_test so loading it can never change the data that the
-    exercise 1 tests rely on.
+    the earlier tests rely on.
     """
     db = _open_test_db(TEST_DB_ML)  # skips first when no Postgres is configured
 
